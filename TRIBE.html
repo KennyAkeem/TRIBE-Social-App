@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>TRIBE Social App</title>
+  <style>
+    
+
+:root{
+      --primary:#1877f2;
+      --bg:#f0f2f5;
+      --card:#fff;
+      --muted:#666;
+      --danger:#e0245e;
+      --radius:10px;
+      --maxw:900px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background:var(--bg);
+      color:#111;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+
+    /* ---------- Layout ---------- */
+    .hidden{display:none !important}
+    .center {
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    /* Auth screen */
+    .auth-screen{
+      min-height:100vh;
+      padding:28px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .auth-card{
+      width:100%;
+      max-width:380px;
+      background:var(--card);
+      border-radius:var(--radius);
+      box-shadow:0 6px 22px rgba(12,20,30,0.08);
+      padding:20px;
+    }
+    .auth-card h1{margin:0 0 8px;font-size:20px;color:var(--primary)}
+    .field{margin-top:10px}
+    .field input, .field textarea{
+      width:100%;padding:10px;border-radius:8px;border:1px solid #dcdcdc;
+      font-size:14px;
+    }
+    .btn{
+      display:inline-block;padding:10px 12px;border-radius:8px;border:none;
+      background:var(--primary);color:#fff;font-weight:600;cursor:pointer;margin-top:12px;
+    }
+    .muted{color:var(--muted);font-size:13px;margin-top:10px}
+    .link{color:var(--primary);cursor:pointer}
+
+    /* App layout */
+    .app{
+      display:flex;
+      justify-content:center;
+      padding:18px;
+    }
+    .shell{
+      width:100%;
+      max-width:var(--maxw);
+      display:grid;
+      grid-template-columns: 260px 1fr;
+      gap:16px;
+    }
+
+    /* Left column (profile & nav) */
+    .sidebar{
+      position:sticky;top:18px;
+    }
+    .profile-card{
+      background:var(--card);padding:14px;border-radius:var(--radius);box-shadow:0 4px 12px rgba(0,0,0,0.06);
+    }
+    .profile-card h3{margin:0 0 6px}
+    .profile-card p{margin:0;color:var(--muted);font-size:13px}
+    .nav{
+      margin-top:12px;
+      display:flex;flex-direction:column;gap:8px;
+    }
+    .nav button{
+      text-align:left;padding:10px;border-radius:8px;border:1px solid #e9eefc;background:#fff;cursor:pointer;
+    }
+
+    /* Right column (main) */
+    .main{
+      min-height:80vh;
+    }
+    .topbar{
+      display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;
+    }
+    .topbar h2{margin:0;font-size:18px}
+    .card{
+      background:var(--card);border-radius:var(--radius);padding:12px;margin-bottom:14px;box-shadow:0 3px 12px rgba(0,0,0,0.06);
+    }
+
+    /* Create post */
+    .create-post textarea{min-height:70px;resize:vertical}
+    .create-actions{display:flex;justify-content:flex-end;margin-top:8px}
+
+    /* Post item */
+    .post-author{font-weight:700;color:var(--primary);margin-bottom:6px}
+    .post-meta{font-size:12px;color:var(--muted);margin-bottom:8px}
+    .post-text{white-space:pre-wrap;margin-bottom:8px}
+    .post-actions{display:flex;align-items:center;gap:10px}
+    .like-btn{
+      border:1px solid #e2e8f0;padding:6px 10px;border-radius:20px;background:transparent;cursor:pointer;
+    }
+    .like-btn.liked{background:#ffeef0;border-color:#ffcade;color:var(--danger)}
+    .count{font-size:13px;color:var(--muted)}
+
+    /* Heart animation */
+    .heart{
+      position:absolute;font-size:56px;color:#ff1d5c;left:50%;top:50%;transform:translate(-50%,-50%) scale(0);opacity:0;transition:all .45s cubic-bezier(.22,.9,.35,1);pointer-events:none;
+    }
+    .show-heart{transform:translate(-50%,-50%) scale(1);opacity:1}
+
+    /* Comments */
+    .comments{margin-top:10px}
+    .comment{background:#f4f6f8;padding:8px;border-radius:8px;margin-bottom:8px;font-size:13px}
+    .comment strong{color:var(--primary);font-weight:700}
+
+    /* Responsive */
+    @media (max-width:800px){
+      .shell{grid-template-columns:1fr; padding-bottom:80px}
+      .sidebar{position:relative}
+    }
+
+
+
+  </style>
+  <!--favicon-->
+  <link rel="icon" type="image/x-image" href="image/logo.jpg">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet"/>
+
+  <!-- typing effect-->
+  <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
+</head>
+<body>
+
+  <!-- AUTH -->
+  <section id="auth" class="auth-screen ">
+    <div class="auth-card">
+      <h3>Welcome To TRIBE</h3>
+      <h3 id="auth-title"></h3>
+      <marquee>Meet and connect with your tribe and foreigners</marquee>
+      <div id="auth-error" style="display:none;background:#ffe6e9;color:#a40020;padding:8px;border-radius:8px;margin-top:8px"></div>
+
+      <div class="field">
+        <input id="input-username" placeholder="username (no spaces)"/>
+      </div>
+      <div class="field">
+        <input id="input-password" type="password" placeholder="password"/>
+      </div>
+
+      <button id="btn-auth" class="btn">Login</button>
+
+      <div class="muted">
+        <span id="switch-text">Don't have an account?</span>
+        <span id="link-switch" class="link"> Register</span>
+      </div>
+      <div style="height:8px"></div>
+      <div style="margin-top:8px" class="muted">Tip: username will act as account id. You can edit display name & bio later in profile.</div>
+    </div>
+  </section>
+
+  <!-- APP -->
+  <main id="app" class="app hidden" aria-hidden="true">
+    <div class="shell">
+      <!-- LEFT: profile + nav -->
+      <aside class="sidebar">
+        <div class="profile-card card">
+          <!-- Sidebar Avatar -->
+          <img id="sidebar-avatar" alt="avatar" style="width:80px;height:80px;border-radius:50%;object-fit:cover;margin-bottom:10px;display:block"/>
+          <h3 id="profile-display">Display Name</h3>
+          <p id="profile-username">@username</p>
+          <p id="profile-bio" style="margin-top:8px;color:var(--muted)">Bio goes here</p>
+        </div>
+
+        <div class="card" style="margin-top:12px">
+          <div class="nav">
+            <button id="nav-home">Home (Profile)</button>
+            <button id="nav-feed">News Feed</button>
+            <button id="nav-create">Create Post</button>
+            <button id="nav-logout" style="background:var(--danger);color:#fff;border:none">Logout</button>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:12px">
+          <div style="font-size:13px;color:var(--muted);">Logged in as</div>
+          <div style="font-weight:700;margin-top:6px" id="sidebar-username">@username</div>
+        </div>
+      </aside>
+
+      <!-- RIGHT: main area -->
+      <section class="main">
+        <div class="topbar">
+          <h2 id="main-title">Profile</h2>
+          <div style="font-size:13px;color:var(--muted)">TRIBE Social App</div>
+        </div>
+
+        <!-- PROFILE VIEW -->
+        <div id="view-profile" class="card">
+          <h3>Edit Profile</h3>
+          <div style="margin-top:8px">
+            <label style="font-size:13px;color:var(--muted)">Display name</label>
+            <div style="margin-top:6px"><input id="edit-display" style="padding:8px;border-radius:8px;border:1px solid #ddd;width:100%"/></div>
+          </div>
+          <div style="margin-top:10px">
+            <label style="font-size:13px;color:var(--muted)">Bio</label>
+            <div style="margin-top:6px"><textarea id="edit-bio" rows="3" style="width:100%;padding:8px;border-radius:8px;border:1px solid #ddd"></textarea></div>
+          </div>
+
+          <!-- Profile Picture Upload -->
+          <div style="margin-top:10px">
+            <label style="font-size:13px;color:var(--muted)">Profile Picture</label>
+            <div style="margin-top:6px">
+              <input type="file" id="edit-pic" accept="image/*">
+            </div>
+            <img id="edit-pic-preview" alt="preview" style="margin-top:8px;width:80px;height:80px;border-radius:50%;object-fit:cover;display:block"/>
+          </div>
+
+          <div style="margin-top:10px; display:flex; gap:8px; justify-content:flex-end;">
+            <button id="btn-save-profile" class="btn" style="background:var(--primary)">Save</button>
+          </div>
+        </div>
+
+        <!-- CREATE POST VIEW -->
+        <div id="view-create" class="card hidden">
+          <h3>Create Post</h3>
+          <div style="margin-top:8px">
+            <textarea id="post-text" placeholder="What's on your mind?" style="width:100%;padding:10px;border-radius:8px;border:1px solid #ddd"></textarea>
+            <div class="create-actions">
+              <button id="btn-post" class="btn">Post</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- FEED VIEW -->
+        <div id="view-feed" class="hidden"></div>
+      </section>
+    </div>
+  </main>
+
+  <div style="text-align: center;">
+    <h3><span class="multiple-text"></span></h3>
+  </div>
+  <div style="text-align: center;">
+    <p>This is the end of your feed, add  more friends to see more posts</p>
+  </div>
+
+  <script>
+ /*************************************************************
+ * index-js.js - Full app with Messenger pop-ups (multiple)
+ *
+ * Features:
+ * - Auth (login/register)
+ * - Profile edit + optional picture
+ * - Posts + Reactions
+ * - Comments
+ * - Friend requests (send/accept/reject/cancel)
+ * - Find People UI & Friends view + badge
+ * - Messenger: floating button, friends-only, multiple pop-up chat windows
+ * - Messages persisted to localStorage; read state tracked per message
+ *
+ * Drop this file into js/index-js.js (replace old file).
+ *************************************************************/
+
+/*********************
+ * Storage & Helpers *
+ *********************/
+const LS_USERS = 'mf_users_v1';
+const LS_CURRENT = 'mf_current_v1';
+const LS_POSTS = 'mf_posts_v1';
+const LS_REACTIONS = 'mf_reactions_v1';
+const LS_COMMENTS = 'mf_comments_v1';
+const LS_FRIENDS = 'mf_friends_v1';
+const LS_REQUESTS = 'mf_requests_v1';
+const LS_MESSAGES = 'mf_messages_v1';
+
+const safeParse = (s, d) => { try { return JSON.parse(s) ?? d; } catch { return d; } };
+const now = () => Date.now();
+
+const getUsers = () => safeParse(localStorage.getItem(LS_USERS), {});
+const saveUsers = (u) => localStorage.setItem(LS_USERS, JSON.stringify(u));
+
+const getCurrentUser = () => localStorage.getItem(LS_CURRENT) || '';
+const setCurrentUser = (u) => { if (u) localStorage.setItem(LS_CURRENT, u); else localStorage.removeItem(LS_CURRENT); };
+
+const getPosts = () => safeParse(localStorage.getItem(LS_POSTS), defaultPosts());
+const savePosts = (p) => localStorage.setItem(LS_POSTS, JSON.stringify(p));
+
+const getReactions = () => safeParse(localStorage.getItem(LS_REACTIONS), {});
+const saveReactions = (r) => localStorage.setItem(LS_REACTIONS, JSON.stringify(r));
+
+const getComments = () => safeParse(localStorage.getItem(LS_COMMENTS), {});
+const saveComments = (c) => localStorage.setItem(LS_COMMENTS, JSON.stringify(c));
+
+const getFriends = () => safeParse(localStorage.getItem(LS_FRIENDS), {});
+const saveFriends = (m) => localStorage.setItem(LS_FRIENDS, JSON.stringify(m));
+
+const getRequests = () => safeParse(localStorage.getItem(LS_REQUESTS), {});
+const saveRequests = (r) => localStorage.setItem(LS_REQUESTS, JSON.stringify(r));
+
+const getMessages = () => safeParse(localStorage.getItem(LS_MESSAGES), {});
+const saveMessages = (m) => localStorage.setItem(LS_MESSAGES, JSON.stringify(m));
+
+// Defaults
+function defaultPosts(){
+  return [
+    { id: idFor(), author: 'Alice', text: 'Welcome to TRIBE — now with Reactions, Friends & Messenger!', ts: now() - 1000*60*60*6 },
+    { id: idFor(), author: 'Bob', text: 'Try friend requests and open a chat with friends!', ts: now() - 1000*60*30 }
+  ];
+}
+function idFor(){ return `${Date.now()}_${Math.floor(Math.random()*9999)}`; }
+function timeAgo(ts){
+  const s = Math.floor((Date.now()-ts)/1000);
+  if (s < 60) return `${s}s`;
+  const m = Math.floor(s/60); if (m < 60) return `${m}m`;
+  const h = Math.floor(m/60); if (h < 24) return `${h}h`;
+  const d = Math.floor(h/24); return `${d}d`;
+}
+
+/*********************
+ * Avatar helpers (initials svg)
+ *********************/
+function svgAvatarDataURL(name='?', size=80){
+  const initial = String(name || '?').trim().charAt(0).toUpperCase() || '?';
+  let hash = 0;
+  for (let i=0;i<name.length;i++) hash = name.charCodeAt(i) + ((hash<<5)-hash);
+  const hue = Math.abs(hash) % 360;
+  const bg = `hsl(${hue},70%,45%)`;
+  const svg =
+    `<svg xmlns='http://www.w3.org/2000/svg' width='${size}' height='${size}' viewBox='0 0 ${size} ${size}'>
+      <rect width='100%' height='100%' rx='${size/2}' ry='${size/2}' fill='${bg}'/>
+      <text x='50%' y='54%' dominant-baseline='middle' text-anchor='middle'
+        font-family='Inter, system-ui, Arial' font-size='${Math.floor(size*0.5)}'
+        fill='#ffffff'>${initial}</text>
+    </svg>`;
+  return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
+}
+function avatarFor(username, picDataUrl, size=80){
+  const nameForColor = username || 'User';
+  return picDataUrl && typeof picDataUrl === 'string' && picDataUrl.startsWith('data:')
+    ? picDataUrl
+    : svgAvatarDataURL(nameForColor, size);
+}
+
+/*********************
+ * Friend helpers
+ *********************/
+function requestKey(from, to){ return `${from}:${to}`; }
+function friendKey(a,b){ return `${a}:${b}`; }
+
+function sendFriendRequest(from, to){
+  if (!from || !to || from === to) return false;
+  const users = getUsers();
+  if (!users[to]) return false;
+  if (areFriends(from,to)) return false;
+  const req = getRequests();
+  req[requestKey(from,to)] = 'pending';
+  saveRequests(req);
+  updateFriendBadge();
+  return true;
+}
+function cancelFriendRequest(from,to){
+  const req = getRequests(); delete req[requestKey(from,to)]; saveRequests(req); updateFriendBadge();
+}
+function acceptFriendRequest(from,to){
+  const req = getRequests();
+  if (!req[requestKey(from,to)]) return false;
+  const fr = getFriends();
+  fr[friendKey(from,to)] = 'accepted';
+  fr[friendKey(to,from)] = 'accepted';
+  saveFriends(fr);
+  delete req[requestKey(from,to)];
+  saveRequests(req);
+  updateFriendBadge();
+  return true;
+}
+function rejectFriendRequest(from,to){
+  const req = getRequests(); delete req[requestKey(from,to)]; saveRequests(req); updateFriendBadge();
+}
+function areFriends(a,b){
+  const fr = getFriends();
+  return !!fr[friendKey(a,b)];
+}
+function incomingRequestsFor(user){
+  const req = getRequests(); const arr = [];
+  for (const k in req){ const [from,to] = k.split(':'); if (to === user && req[k] === 'pending') arr.push(from); }
+  return arr;
+}
+function outgoingRequestsFrom(user){
+  const req = getRequests(); const arr = [];
+  for (const k in req){ const [from,to] = k.split(':'); if (from === user && req[k] === 'pending') arr.push(to); }
+  return arr;
+}
+function friendsOf(user){
+  const fr = getFriends(); const arr = [];
+  for (const k in fr){ const [a,b] = k.split(':'); if (a === user && fr[k] === 'accepted') arr.push(b); }
+  return [...new Set(arr)];
+}
+
+/*********************
+ * Message helpers
+ * - messages stored by chatKey sorted alphabetical (a:b)
+ * - message: { from, text, ts, readBy: [usernames...] }
+ *********************/
+function chatKey(a,b){
+  const arr = [a,b].filter(Boolean).sort((x,y)=>x.localeCompare(y));
+  return arr.join(':');
+}
+function getChatMessages(a,b){
+  const key = chatKey(a,b);
+  const m = getMessages();
+  return m[key] || [];
+}
+function saveChatMessages(a,b,arr){
+  const key = chatKey(a,b);
+  const m = getMessages();
+  m[key] = arr;
+  saveMessages(m);
+}
+function sendMessage(from,to,text){
+  if (!from || !to || !text) return false;
+  const key = chatKey(from,to);
+  const m = getMessages();
+  if (!m[key]) m[key] = [];
+  m[key].push({ from, text, ts: now(), readBy: [from] }); // sender has read
+  saveMessages(m);
+  // if chat popup with 'to' open, rerender that popup and mark as read
+  renderOpenChatWindowWithMarkRead(to);
+  renderOpenChatWindowWithMarkRead(from); // marks own view too if open
+  updateMessengerBadge();
+  return true;
+}
+function markChatReadForUser(chatPartner, user){
+  const key = chatKey(chatPartner, user);
+  const m = getMessages();
+  const msgs = m[key] || [];
+  let changed = false;
+  msgs.forEach(msg=>{
+    if (!msg.readBy) msg.readBy = [];
+    if (!msg.readBy.includes(user)){
+      msg.readBy.push(user); changed = true;
+    }
+  });
+  if (changed) { m[key] = msgs; saveMessages(m); updateMessengerBadge(); }
+}
+function unreadCountForChatWith(partner, forUser){
+  const msgs = getChatMessages(partner, forUser);
+  let cnt = 0;
+  msgs.forEach(msg=>{
+    if (msg.from !== forUser && (!msg.readBy || !msg.readBy.includes(forUser))) cnt++;
+  });
+  return cnt;
+}
+function totalUnreadForUser(user){
+  const messages = getMessages();
+  let total = 0;
+  for (const k in messages){
+    const parts = k.split(':');
+    if (!parts.includes(user)) continue;
+    messages[k].forEach(msg=>{
+      if (msg.from !== user && (!msg.readBy || !msg.readBy.includes(user))) total++;
+    });
+  }
+  return total;
+}
+
+/*********************
+ * UI Elements (safe selects)
+ *********************/
+const authSection = document.getElementById('auth');
+const app = document.getElementById('app');
+const profileDisplay = document.getElementById('profile-display');
+const profileUsername = document.getElementById('profile-username');
+const profileBio = document.getElementById('profile-bio');
+const sidebarUsername = document.getElementById('sidebar-username');
+
+const authTitle = document.getElementById('auth-title');
+const authError = document.getElementById('auth-error');
+const usernameField = document.getElementById('input-username');
+const passwordField = document.getElementById('input-password');
+const linkSwitch = document.getElementById('link-switch');
+
+const viewProfile = document.getElementById('view-profile');
+const viewCreate = document.getElementById('view-create');
+const viewFeed = document.getElementById('view-feed');
+
+const editDisplay = document.getElementById('edit-display');
+const editBio = document.getElementById('edit-bio');
+const btnSaveProfile = document.getElementById('btn-save-profile');
+const editPic = document.getElementById('edit-pic'); // optional
+const editPicPreview = document.getElementById('edit-pic-preview'); // optional
+const sidebarAvatar = document.getElementById('sidebar-avatar'); // optional
+
+const postText = document.getElementById('post-text');
+const btnPost = document.getElementById('btn-post');
+
+const navHome = document.getElementById('nav-home');
+const navFeed = document.getElementById('nav-feed');
+const navCreate = document.getElementById('nav-create');
+const navLogout = document.getElementById('nav-logout');
+const mainTitle = document.getElementById('main-title');
+
+/*********************
+ * State & Init
+ *********************/
+let isLoginMode = true;
+let current = getCurrentUser();
+
+// ensure storages exist
+if (!localStorage.getItem(LS_POSTS)) savePosts(defaultPosts());
+if (!localStorage.getItem(LS_FRIENDS)) saveFriends({});
+if (!localStorage.getItem(LS_REQUESTS)) saveRequests({});
+if (!localStorage.getItem(LS_MESSAGES)) saveMessages({});
+
+/*********************
+ * Inject Friends/Discover nav + badge (if nav container exists)
+ *********************/
+let badgeFriends = null;
+function injectFriendNav() {
+  try {
+    const navContainer = document.querySelector('.sidebar .nav') || document.querySelector('.nav');
+    if (!navContainer) return;
+    if (document.getElementById('nav-friends')) return;
+
+    const btnFriends = document.createElement('button');
+    btnFriends.id = 'nav-friends';
+    btnFriends.textContent = 'Friends';
+    btnFriends.style.textAlign = 'left';
+    btnFriends.addEventListener('click', ()=> showFriendsView());
+
+    badgeFriends = document.createElement('span');
+    badgeFriends.style.cssText = "background:red;color:white;font-size:11px;padding:2px 6px;border-radius:10px;margin-left:8px;display:none;vertical-align:middle";
+    btnFriends.appendChild(badgeFriends);
+
+    const btnDiscover = document.createElement('button');
+    btnDiscover.id = 'nav-discover';
+    btnDiscover.textContent = 'Find People';
+    btnDiscover.style.textAlign = 'left';
+    btnDiscover.addEventListener('click', ()=> showDiscoverView());
+
+    navContainer.insertBefore(btnDiscover, navContainer.firstChild);
+    navContainer.insertBefore(btnFriends, navContainer.firstChild);
+
+    updateFriendBadge();
+  } catch (e) { console.warn(e); }
+}
+injectFriendNav();
+
+/*********************
+ * Auth wiring
+ *********************/
+document.getElementById('btn-auth')?.addEventListener('click', handleAuth);
+linkSwitch?.addEventListener('click', ()=> toggleAuthMode(!isLoginMode));
+usernameField?.addEventListener('keydown', (e)=> { if (e.key === 'Enter') handleAuth(); });
+passwordField?.addEventListener('keydown', (e)=> { if (e.key === 'Enter') handleAuth(); });
+
+function toggleAuthMode(mode){
+  isLoginMode = mode;
+  if (authTitle) authTitle.textContent = isLoginMode ? 'Login' : 'Register';
+  const btn = document.getElementById('btn-auth'); if (btn) btn.textContent = isLoginMode ? 'Login' : 'Register';
+  const s = document.getElementById('switch-text'); if (s) s.textContent = isLoginMode ? "Don't have an account?" : "Already have an account?";
+  if (linkSwitch) linkSwitch.textContent = isLoginMode ? ' Register' : ' Login';
+  if (authError) authError.style.display = 'none';
+}
+function showAuthError(msg){ if (!authError) return; authError.textContent = msg; authError.style.display = 'block'; }
+
+function handleAuth(){
+  const u = (usernameField?.value || '').trim();
+  const p = (passwordField?.value || '').trim();
+  if (!u || !p) { showAuthError('Please fill username and password'); return; }
+  if (/\s/.test(u)) { showAuthError('Username cannot contain spaces'); return; }
+
+  const users = getUsers();
+  if (isLoginMode){
+    if (users[u] && users[u].password === p){
+      setCurrentUser(u); current = u; if (usernameField) usernameField.value=''; if (passwordField) passwordField.value=''; openApp();
+    } else showAuthError('Invalid username or password');
+  } else {
+    if (users[u]) { showAuthError('Username already exists'); return; }
+    users[u] = { password: p, displayName: u, bio: '', pic: '' };
+    saveUsers(users);
+    setCurrentUser(u); current = u; if (usernameField) usernameField.value=''; if (passwordField) passwordField.value=''; openApp();
+  }
+}
+
+/*********************
+ * App navigation
+ *********************/
+function openApp(){
+  authSection?.classList.add('hidden');
+  app?.classList.remove('hidden');
+  app?.setAttribute('aria-hidden','false');
+  renderProfileSection();
+  showProfile();
+  injectFriendNav();
+  updateFriendBadge();
+  initMessengerUI(); // create floating button
+  updateMessengerBadge();
+}
+function closeApp(){
+  authSection?.classList.remove('hidden');
+  app?.classList.add('hidden');
+  app?.setAttribute('aria-hidden','true');
+}
+navHome?.addEventListener('click', ()=> showProfile());
+navFeed?.addEventListener('click', ()=> showFeed());
+navCreate?.addEventListener('click', ()=> showCreate());
+navLogout?.addEventListener('click', ()=> doLogout());
+
+function doLogout(){ setCurrentUser(''); current = ''; closeApp(); toggleAuthMode(true); }
+
+/*********************
+ * Profile & Avatar
+ *********************/
+function renderProfileSection(){
+  const users = getUsers();
+  if (!users[current]) users[current] = { password:'', displayName: current, bio:'', pic:'' };
+  const me = users[current];
+  if (profileDisplay) profileDisplay.textContent = me.displayName || current;
+  if (profileUsername) profileUsername.textContent = '@' + current;
+  if (profileBio) profileBio.textContent = me.bio || 'No bio yet.';
+  if (sidebarUsername) sidebarUsername.textContent = '@' + current;
+
+  const sideSrc = avatarFor(me.displayName || current, me.pic, 80);
+  if (sidebarAvatar) sidebarAvatar.src = sideSrc;
+  if (editPicPreview) editPicPreview.src = sideSrc;
+
+  if (editDisplay) editDisplay.value = me.displayName || current;
+  if (editBio) editBio.value = me.bio || '';
+}
+btnSaveProfile?.addEventListener('click', ()=>{
+  const users = getUsers();
+  if (!users[current]) users[current] = { password:'', displayName: current, bio:'', pic: '' };
+  users[current].displayName = (editDisplay?.value?.trim() || current);
+  users[current].bio = (editBio?.value?.trim() || '');
+  saveUsers(users);
+  renderProfileSection();
+  alert('Profile saved');
+});
+editPic?.addEventListener('change', (e)=>{
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev)=>{
+    const users = getUsers();
+    if (!users[current]) users[current] = { password:'', displayName: current, bio:'', pic:'' };
+    users[current].pic = ev.target.result;
+    saveUsers(users);
+    const me = users[current];
+    const src = avatarFor(me.displayName || current, me.pic, 80);
+    if (sidebarAvatar) sidebarAvatar.src = src;
+    if (editPicPreview) editPicPreview.src = src;
+    if (!viewFeed?.classList.contains('hidden')) renderFeed();
+  };
+  reader.readAsDataURL(file);
+});
+function showProfile(){ if (mainTitle) mainTitle.textContent = 'Profile'; viewProfile?.classList.remove('hidden'); viewCreate?.classList.add('hidden'); viewFeed?.classList.add('hidden'); renderProfileSection(); }
+
+/*********************
+ * Create Post
+ *********************/
+btnPost?.addEventListener('click', ()=>{
+  const txt = (postText?.value || '').trim(); if (!txt) return;
+  const posts = getPosts(); posts.unshift({ id: idFor(), author: current, text: txt, ts: now() });
+  savePosts(posts);
+  if (postText) postText.value = '';
+  alert('Posted to feed');
+  showFeed();
+});
+function showCreate(){ if (mainTitle) mainTitle.textContent = 'Create Post'; viewProfile?.classList.add('hidden'); viewCreate?.classList.remove('hidden'); viewFeed?.classList.add('hidden'); }
+
+/*********************
+ * Reactions / Feed / Comments
+ *********************/
+const availableReactions = ["👍","❤️","😂","😮","😢","😡"];
+
+function showFeed(){ if (mainTitle) mainTitle.textContent = 'News Feed'; viewProfile?.classList.add('hidden'); viewCreate?.classList.add('hidden'); viewFeed?.classList.remove('hidden'); renderFeed(); }
+
+function renderFeed(){
+  if (!viewFeed) return;
+  const posts = getPosts().slice().sort((a,b)=>b.ts - a.ts);
+  const reactions = getReactions();
+  const users = getUsers();
+
+  viewFeed.innerHTML = '';
+
+  posts.forEach(post => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.style.position = 'relative';
+
+    // Reaction counts
+    const counts = {};
+    for (const key in reactions){
+      const [user, pid] = key.split(':');
+      if (pid === post.id && reactions[key]){
+        const emoji = reactions[key];
+        counts[emoji] = (counts[emoji]||0)+1;
+      }
+    }
+    const summary = Object.entries(counts).map(([emoji,c])=>`${emoji} ${c}`).join(' · ') || '';
+
+    const authorUser = users[post.author] || { displayName: post.author, pic: '' };
+    const avatarSrc = avatarFor(authorUser.displayName || post.author, authorUser.pic, 32);
+    const myReaction = reactions[`${current}:${post.id}`] || '';
+
+    card.innerHTML = `
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+        <img src="${avatarSrc}" alt="" style="width:32px;height:32px;border-radius:50%;object-fit:cover">
+        <div>
+          <div class="post-author">${escapeHtml(authorUser.displayName || post.author)}</div>
+          <div class="post-meta">${timeAgo(post.ts)} • ${new Date(post.ts).toLocaleString()}</div>
+        </div>
+      </div>
+
+      <div class="post-text">${escapeHtml(post.text)}</div>
+
+      <div class="post-actions">
+        <div style="position:relative;display:inline-block">
+          <button class="like-btn" data-id="${post.id}">
+            ${myReaction ? `${myReaction} Reacted` : "👍 Like"}
+          </button>
+          <div class="reaction-picker hidden" id="picker-${post.id}"
+               style="position:absolute;bottom:110%;left:0;background:#fff;border:1px solid #ddd;padding:6px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1);display:flex;gap:6px;z-index:5">
+            ${availableReactions.map(r=>`<span class="reaction-option" data-r="${r}" style="cursor:pointer;font-size:20px">${r}</span>`).join('')}
+          </div>
+        </div>
+        <div class="count" id="count-${post.id}">${summary}</div>
+      </div>
+
+      <div class="comments" id="comments-${post.id}"></div>
+
+      <div class="comment-input" style="margin-top:10px;display:flex;gap:8px;align-items:center">
+        <img src="${avatarFor(users[current]?.displayName || current, users[current]?.pic || '', 28)}" alt=""
+             style="width:28px;height:28px;border-radius:50%;object-fit:cover">
+        <input id="comment-input-${post.id}" placeholder="Write a comment..." style="flex:1;padding:8px;border-radius:8px;border:1px solid #ddd"/>
+        <button class="btn" data-id="${post.id}" id="comment-btn-${post.id}" style="padding:8px 10px">Comment</button>
+      </div>
+    `;
+    viewFeed.appendChild(card);
+
+    const likeBtn = card.querySelector('.like-btn');
+    const picker = card.querySelector(`#picker-${post.id}`);
+    likeBtn?.addEventListener('click', ()=> picker?.classList.toggle('hidden'));
+
+    picker?.querySelectorAll('.reaction-option').forEach(opt=>{
+      opt.addEventListener('click', ()=> setReaction(post.id, opt.dataset.r));
+    });
+
+    card.querySelector(`#comment-btn-${post.id}`)?.addEventListener('click', ()=>{
+      const input = document.getElementById(`comment-input-${post.id}`);
+      const txt = (input?.value || '').trim(); if (!txt) return;
+      addComment(post.id, current, txt);
+      if (input) input.value = '';
+      renderCommentsFor(post.id);
+    });
+
+    card.querySelector(`#comment-input-${post.id}`)?.addEventListener('keydown', (e)=>{
+      if (e.key === 'Enter'){
+        const txt = (e.target.value || '').trim(); if (!txt) return;
+        addComment(post.id, current, txt);
+        e.target.value = '';
+        renderCommentsFor(post.id);
+      }
+    });
+
+    renderCommentsFor(post.id);
+  });
+
+  document.addEventListener('click', (e)=>{
+    document.querySelectorAll('.reaction-picker').forEach(el=>{
+      if (!el.contains(e.target) && !el.previousElementSibling?.contains(e.target)){
+        el.classList.add('hidden');
+      }
+    });
+  }, { once:true });
+}
+
+function setReaction(postId, emoji){
+  if (!current){ alert('Please login'); return; }
+  const r = getReactions();
+  r[`${current}:${postId}`] = emoji;
+  saveReactions(r);
+  renderFeed();
+}
+
+/*********************
+ * Comments
+ *********************/
+function renderCommentsFor(postId){
+  const box = document.getElementById(`comments-${postId}`);
+  if (!box) return;
+  const comments = getComments();
+  const users = getUsers();
+  box.innerHTML = '';
+  const arr = comments[postId] || [];
+  arr.forEach(c => {
+    const userObj = users[c.user] || { displayName: c.user, pic: '' };
+    const aSrc = avatarFor(userObj.displayName || c.user, userObj.pic, 28);
+    const div = document.createElement('div');
+    div.className = 'comment';
+    div.style.display = 'flex';
+    div.style.alignItems = 'flex-start';
+    div.style.gap = '8px';
+    div.innerHTML = `
+      <img src="${aSrc}" alt="" style="width:28px;height:28px;border-radius:50%;object-fit:cover">
+      <div>
+        <strong>${escapeHtml(userObj.displayName || c.user)}:</strong> ${escapeHtml(c.text)}
+        <div style="font-size:11px;color:var(--muted);margin-top:6px">${timeAgo(c.ts)}</div>
+      </div>
+    `;
+    box.appendChild(div);
+  });
+}
+function addComment(postId, user, text){
+  const comments = getComments();
+  if (!comments[postId]) comments[postId] = [];
+  comments[postId].push({ user, text, ts: now() });
+  saveComments(comments);
+}
+
+/*********************
+ * Find People / Friends UI + Badge
+ *********************/
+function ensureFriendsViewExists(){
+  if (document.getElementById('view-friends')) return;
+  const mainSection = document.querySelector('.main') || document.body;
+  const div = document.createElement('div');
+  div.id = 'view-friends';
+  div.className = 'card hidden';
+  div.innerHTML = `<h3>Friends & Requests</h3>
+    <div id="friends-requests-wrapper" style="display:flex;flex-direction:column;gap:12px;margin-top:8px"></div>
+  `;
+  const profileView = document.getElementById('view-profile');
+  if (profileView && profileView.parentNode) profileView.parentNode.insertBefore(div, profileView.nextSibling);
+  else mainSection.appendChild(div);
+}
+
+function showFriendsView(){
+  ensureFriendsViewExists();
+  if (mainTitle) mainTitle.textContent = 'Friends';
+  viewProfile?.classList.add('hidden');
+  viewCreate?.classList.add('hidden');
+  viewFeed?.classList.add('hidden');
+  const fv = document.getElementById('view-friends'); if (!fv) return;
+  fv.classList.remove('hidden');
+  renderFriends();
+  if (badgeFriends) badgeFriends.style.display = 'none';
+}
+
+function renderFriends(){
+  const wrapper = document.getElementById('friends-requests-wrapper');
+  if (!wrapper) return;
+  wrapper.innerHTML = '';
+
+  const incoming = incomingRequestsFor(current);
+  const incCard = document.createElement('div'); incCard.className='card'; incCard.innerHTML = `<h4>Incoming Requests (${incoming.length})</h4>`;
+  incoming.forEach(fromUser=>{
+    const users = getUsers();
+    const uobj = users[fromUser] || { displayName: fromUser, pic: '' };
+    const row = document.createElement('div');
+    row.style.display='flex'; row.style.alignItems='center'; row.style.justifyContent='space-between'; row.style.marginTop='8px';
+    row.innerHTML = `
+      <div style="display:flex;gap:8px;align-items:center">
+        <img src="${avatarFor(uobj.displayName||fromUser,uobj.pic,40)}" style="width:40px;height:40px;border-radius:50%;object-fit:cover">
+        <div>
+          <div style="font-weight:700">${escapeHtml(uobj.displayName || fromUser)}</div>
+          <div style="font-size:12px;color:var(--muted)">@${escapeHtml(fromUser)}</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn accept-req" data-from="${fromUser}" style="background:var(--primary)">Accept</button>
+        <button class="btn reject-req" data-from="${fromUser}" style="background:#ddd;color:#111">Reject</button>
+      </div>
+    `;
+    incCard.appendChild(row);
+  });
+  wrapper.appendChild(incCard);
+
+  const outgoing = outgoingRequestsFrom(current);
+  const outCard = document.createElement('div'); outCard.className='card'; outCard.innerHTML = `<h4>Sent Requests (${outgoing.length})</h4>`;
+  outgoing.forEach(toUser=>{
+    const users = getUsers();
+    const uobj = users[toUser] || { displayName: toUser, pic: '' };
+    const row = document.createElement('div');
+    row.style.display='flex'; row.style.justifyContent='space-between'; row.style.marginTop='8px';
+    row.innerHTML = `
+      <div style="display:flex;gap:8px;align-items:center">
+        <img src="${avatarFor(uobj.displayName||toUser,uobj.pic,40)}" style="width:40px;height:40px;border-radius:50%;object-fit:cover">
+        <div>
+          <div style="font-weight:700">${escapeHtml(uobj.displayName || toUser)}</div>
+          <div style="font-size:12px;color:var(--muted)">@${escapeHtml(toUser)}</div>
+        </div>
+      </div>
+      <div>
+        <button class="btn cancel-req" data-to="${toUser}" style="background:#ddd;color:#111">Cancel</button>
+      </div>
+    `;
+    outCard.appendChild(row);
+  });
+  wrapper.appendChild(outCard);
+
+  const friends = friendsOf(current);
+  const frCard = document.createElement('div'); frCard.className='card'; frCard.innerHTML = `<h4>Friends (${friends.length})</h4>`;
+  friends.forEach(fr=>{
+    const users = getUsers();
+    const uobj = users[fr] || { displayName: fr, pic: '' };
+    const row = document.createElement('div');
+    row.style.display='flex'; row.style.justifyContent='space-between'; row.style.marginTop='8px';
+    row.innerHTML = `
+      <div style="display:flex;gap:8px;align-items:center">
+        <img src="${avatarFor(uobj.displayName||fr,uobj.pic,40)}" style="width:40px;height:40px;border-radius:50%;object-fit:cover">
+        <div>
+          <div style="font-weight:700">${escapeHtml(uobj.displayName || fr)}</div>
+          <div style="font-size:12px;color:var(--muted)">@${escapeHtml(fr)}</div>
+        </div>
+      </div>
+      <div>
+        <button class="btn unfriend" data-user="${fr}" style="background:#eee;color:#111">Remove</button>
+      </div>
+    `;
+    frCard.appendChild(row);
+  });
+  wrapper.appendChild(frCard);
+
+  // handlers
+  wrapper.querySelectorAll('.accept-req').forEach(b=> b.addEventListener('click', ()=>{ const from=b.dataset.from; acceptFriendRequest(from,current); renderFriends(); }));
+  wrapper.querySelectorAll('.reject-req').forEach(b=> b.addEventListener('click', ()=>{ const from=b.dataset.from; rejectFriendRequest(from,current); renderFriends(); }));
+  wrapper.querySelectorAll('.cancel-req').forEach(b=> b.addEventListener('click', ()=>{ const to=b.dataset.to; cancelFriendRequest(current,to); renderFriends(); }));
+  wrapper.querySelectorAll('.unfriend').forEach(b=> b.addEventListener('click', ()=>{ const u=b.dataset.user; const fr=getFriends(); delete fr[friendKey(current,u)]; delete fr[friendKey(u,current)]; saveFriends(fr); renderFriends(); }));
+}
+
+/* Discover view (Find People) */
+function ensureDiscoverViewExists(){
+  if (document.getElementById('view-discover')) return;
+  const mainSection = document.querySelector('.main') || document.body;
+  const div = document.createElement('div');
+  div.id = 'view-discover';
+  div.className = 'card hidden';
+  div.innerHTML = `<h3>Find People</h3>
+    <div style="margin-top:8px"><input id="discover-search" placeholder="Search by username or display name" style="width:100%;padding:8px;border-radius:8px;border:1px solid #ddd"/></div>
+    <div id="discover-wrapper" style="margin-top:8px;display:flex;flex-direction:column;gap:8px"></div>
+  `;
+  const profileView = document.getElementById('view-profile');
+  if (profileView && profileView.parentNode) profileView.parentNode.insertBefore(div, profileView.nextSibling);
+  else mainSection.appendChild(div);
+}
+function showDiscoverView(){
+  ensureDiscoverViewExists();
+  if (mainTitle) mainTitle.textContent = 'Find People';
+  viewProfile?.classList.add('hidden');
+  viewCreate?.classList.add('hidden');
+  viewFeed?.classList.add('hidden');
+  const dv = document.getElementById('view-discover'); if (!dv) return;
+  dv.classList.remove('hidden');
+
+  const wrapper = document.getElementById('discover-wrapper');
+  const search = document.getElementById('discover-search');
+  if (!wrapper) return;
+  wrapper.innerHTML = '';
+
+  const users = getUsers();
+  const allUsernames = Object.keys(users).filter(u=>u !== current).sort((a,b)=>a.localeCompare(b));
+
+  function renderList(filter=''){
+    wrapper.innerHTML = '';
+    const lower = filter.trim().toLowerCase();
+    allUsernames.filter(u=>{
+      if (!lower) return true;
+      const dp = (users[u].displayName || u).toLowerCase();
+      return u.toLowerCase().includes(lower) || dp.includes(lower);
+    }).forEach(u=>{
+      const uobj = users[u] || { displayName:u, pic:'' };
+      const row = document.createElement('div');
+      row.style.display='flex'; row.style.justifyContent='space-between'; row.style.alignItems='center'; row.style.gap='8px';
+      row.innerHTML = `
+        <div style="display:flex;gap:8px;align-items:center">
+          <img src="${avatarFor(uobj.displayName||u,uobj.pic,40)}" style="width:40px;height:40px;border-radius:50%;object-fit:cover">
+          <div>
+            <div style="font-weight:700">${escapeHtml(uobj.displayName||u)}</div>
+            <div style="font-size:12px;color:var(--muted)">@${escapeHtml(u)}</div>
+          </div>
+        </div>
+        <div id="actions-${u}"></div>
+      `;
+      wrapper.appendChild(row);
+
+      const actions = document.getElementById(`actions-${u}`);
+      if (!actions) return;
+
+      if (areFriends(current,u)){
+        actions.innerHTML = `<button class="btn remove-friend" data-user="${u}" style="background:#eee;color:#111">Remove</button>`;
+        actions.querySelector('.remove-friend')?.addEventListener('click', ()=>{ const fr=getFriends(); delete fr[friendKey(current,u)]; delete fr[friendKey(u,current)]; saveFriends(fr); showDiscoverView(); });
+        return;
+      }
+      const rmap = getRequests();
+      const keySent = `${current}:${u}`;
+      const keyRecv = `${u}:${current}`;
+      if (rmap[keySent] === 'pending'){
+        actions.innerHTML = `<button class="btn" disabled>Request Sent</button>`;
+        return;
+      }
+      if (rmap[keyRecv] === 'pending'){
+        actions.innerHTML = `<button class="btn accept-req" data-from="${u}" style="background:var(--primary)">Accept</button>
+                             <button class="btn reject-req" data-from="${u}" style="background:#ddd;color:#111;margin-left:6px">Reject</button>`;
+        actions.querySelector('.accept-req')?.addEventListener('click', ()=>{ acceptFriendRequest(u,current); showDiscoverView(); });
+        actions.querySelector('.reject-req')?.addEventListener('click', ()=>{ rejectFriendRequest(u,current); showDiscoverView(); });
+        return;
+      }
+
+      actions.innerHTML = `<button class="btn send-req" data-to="${u}" style="background:var(--primary)">Add Friend</button>`;
+      actions.querySelector('.send-req')?.addEventListener('click', ()=>{ sendFriendRequest(current,u); showDiscoverView(); });
+    });
+  }
+
+  renderList();
+  if (search) {
+    search.value = '';
+    search.addEventListener('input', (e)=> renderList(e.target.value));
+  }
+}
+
+/*********************
+ * Badge updater for friend requests
+ *********************/
+function updateFriendBadge(){
+  if (!badgeFriends) return;
+  const req = getRequests();
+  let count = 0;
+  for (const k in req){
+    if (req[k] === 'pending'){
+      const [from,to] = k.split(':');
+      if (to === current) count++;
+    }
+  }
+  if (count > 0){
+    badgeFriends.textContent = String(count);
+    badgeFriends.style.display = 'inline-block';
+  } else {
+    badgeFriends.style.display = 'none';
+  }
+}
+
+/*********************
+ * Messenger UI (floating + multiple popups)
+ *********************/
+let messengerButton = null;
+let messengerContainer = null; // for friend list
+const openChatWindows = {}; // friend -> window element
+
+function initMessengerUI(){
+  // do once
+  if (document.getElementById('mf-messenger-btn')) return;
+
+  // floating button
+  messengerButton = document.createElement('button');
+  messengerButton.id = 'mf-messenger-btn';
+  messengerButton.title = 'Messenger';
+  messengerButton.style.cssText = `
+    position:fixed;
+    right:18px;
+    bottom:18px;
+    width:56px;height:56px;border-radius:28px;
+    background:#1877f2;color:#fff;border:none;box-shadow:0 8px 24px rgba(0,0,0,0.2);
+    cursor:pointer;z-index:9999;display:flex;align-items:center;justify-content:center;font-size:20px;
+  `;
+  messengerButton.innerHTML = '&#9993;'; // mail icon (simple)
+  document.body.appendChild(messengerButton);
+
+  // unread badge
+  const badge = document.createElement('span');
+  badge.id = 'mf-messenger-badge';
+  badge.style.cssText = 'position:absolute;top:-6px;right:-6px;background:red;color:#fff;padding:2px 6px;border-radius:12px;font-size:12px;display:none';
+  messengerButton.appendChild(badge);
+
+  // container for friend list popup
+  messengerContainer = document.createElement('div');
+  messengerContainer.id = 'mf-messenger-container';
+  messengerContainer.style.cssText = `
+    position:fixed;right:18px;bottom:86px;width:300px;max-height:60vh;overflow:auto;background:#fff;border-radius:8px;box-shadow:0 8px 30px rgba(0,0,0,0.2);z-index:9998;padding:8px;display:none;
+  `;
+  document.body.appendChild(messengerContainer);
+
+  messengerButton.addEventListener('click', (e)=>{
+    // toggle friend list
+    if (messengerContainer.style.display === 'none' || !messengerContainer.style.display) {
+      renderMessengerFriends();
+      messengerContainer.style.display = 'block';
+      updateMessengerBadge(); // mark button badge updated
+    } else {
+      messengerContainer.style.display = 'none';
+    }
+  });
+
+  // click outside close friend list
+  document.addEventListener('click', (e)=>{
+    if (!messengerContainer || !messengerButton) return;
+    if (messengerContainer.contains(e.target) || messengerButton.contains(e.target)) return;
+    messengerContainer.style.display = 'none';
+  });
+}
+
+function renderMessengerFriends(){
+  if (!messengerContainer) return;
+  messengerContainer.innerHTML = '<div style="font-weight:700;margin-bottom:6px">Chats</div>';
+  const friends = friendsOf(current);
+  if (!friends.length) {
+    messengerContainer.innerHTML += `<div style="color:var(--muted)">No friends yet. Add friends to chat.</div>`;
+    updateMessengerBadge();
+    return;
+  }
+  const users = getUsers();
+  friends.forEach(f=>{
+    const uobj = users[f] || { displayName: f, pic: '' };
+    const unread = unreadCountForChatWith(f, current);
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:6px;border-radius:6px;cursor:pointer';
+    row.innerHTML = `
+      <div style="display:flex;gap:8px;align-items:center">
+        <img src="${avatarFor(uobj.displayName||f,uobj.pic,40)}" style="width:40px;height:40px;border-radius:50%;object-fit:cover">
+        <div>
+          <div style="font-weight:700">${escapeHtml(uobj.displayName||f)}</div>
+          <div style="font-size:12px;color:var(--muted)">@${escapeHtml(f)}</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        ${unread>0?`<span style="background:red;color:#fff;padding:2px 6px;border-radius:12px;font-size:12px">${unread}</span>`:''}
+        <button class="btn open-chat" data-user="${f}">Open</button>
+      </div>
+    `;
+    messengerContainer.appendChild(row);
+  });
+
+  messengerContainer.querySelectorAll('.open-chat').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      const friend = b.dataset.user;
+      openChatWindow(friend);
+      messengerContainer.style.display = 'none';
+    });
+  });
+
+  updateMessengerBadge();
+}
+
+// messenger badge shows total unread
+function updateMessengerBadge(){
+  const badge = document.getElementById('mf-messenger-badge');
+  if (!badge) return;
+  const total = totalUnreadForUser(current);
+  if (total > 0) { badge.style.display = 'inline-block'; badge.textContent = String(total); }
+  else badge.style.display = 'none';
+}
+
+/*********************
+ * Chat window management (multiple popups)
+ *********************/
+const POPUP_WIDTH = 320;
+const POPUP_GAP = 8;
+function openChatWindow(friend){
+  if (!friend || !areFriends(current, friend)) { alert('You can only chat with friends'); return; }
+  if (openChatWindows[friend]) {
+    // bring to front
+    openChatWindows[friend].style.zIndex = 10000;
+    return;
+  }
+  // create popup
+  const win = document.createElement('div');
+  win.className = 'mf-chat-popup';
+  win.style.cssText = `
+    position:fixed;bottom:18px;right:18px;width:${POPUP_WIDTH}px;height:420px;background:#fff;border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,0.2);z-index:10000;display:flex;flex-direction:column;
+    overflow:hidden;font-family:Inter, system-ui, Arial;
+  `;
+  // position offset depending on number of open popups
+  const openCount = Object.keys(openChatWindows).length;
+  const offset = (POPUP_WIDTH + POPUP_GAP) * openCount;
+  win.style.right = (18 + offset) + 'px';
+
+  // header
+  const users = getUsers();
+  const uobj = users[friend] || { displayName: friend, pic: '' };
+  const header = document.createElement('div');
+  header.style.cssText = 'display:flex;align-items:center;gap:8px;padding:10px;border-bottom:1px solid #eee;background:#fafafa';
+  header.innerHTML = `
+    <img src="${avatarFor(uobj.displayName||friend,uobj.pic,32)}" style="width:32px;height:32px;border-radius:50%;object-fit:cover">
+    <div style="flex:1">
+      <div style="font-weight:700">${escapeHtml(uobj.displayName||friend)}</div>
+      <div style="font-size:12px;color:var(--muted)">@${escapeHtml(friend)}</div>
+    </div>
+    <button class="btn minimize" title="Minimize" style="margin-right:6px">_</button>
+    <button class="btn close" title="Close">✕</button>
+  `;
+  win.appendChild(header);
+
+  // messages area
+  const msgArea = document.createElement('div');
+  msgArea.style.cssText = 'flex:1;overflow:auto;padding:10px;display:flex;flex-direction:column;gap:8px;background:#fff';
+  win.appendChild(msgArea);
+
+  // input area
+  const inputBar = document.createElement('div');
+  inputBar.style.cssText = 'display:flex;gap:8px;padding:8px;border-top:1px solid #eee;background:#fafafa';
+  inputBar.innerHTML = `
+    <input placeholder="Write a message..." style="flex:1;padding:8px;border-radius:8px;border:1px solid #ddd">
+    <button class="btn send">Send</button>
+  `;
+  win.appendChild(inputBar);
+
+  document.body.appendChild(win);
+  openChatWindows[friend] = win;
+
+  // mark messages read for this user (we opened friend chat)
+  markChatReadForUser(friend, current);
+  updateMessengerBadge();
+
+  // render chat messages
+  function renderMessages(){
+    msgArea.innerHTML = '';
+    const msgs = getChatMessages(current, friend);
+    msgs.forEach(m=>{
+      const bubble = document.createElement('div');
+      const mine = m.from === current;
+      bubble.style.cssText = `display:flex;flex-direction:column;max-width:80%;${mine?'align-self:flex-end;text-align:right':'align-self:flex-start;text-align:left'}`;
+      bubble.innerHTML = `<div style="display:inline-block;padding:8px 10px;border-radius:12px;background:${mine?'#1877f2':'#f1f0f0'};color:${mine?'#fff':'#111'}">${escapeHtml(m.text)}</div>
+                          <div style="font-size:11px;color:var(--muted);margin-top:4px">${timeAgo(m.ts)}</div>`;
+      msgArea.appendChild(bubble);
+    });
+    // scroll to bottom
+    msgArea.scrollTop = msgArea.scrollHeight;
+  }
+  renderMessages();
+
+  // send handler
+  const input = inputBar.querySelector('input');
+  const sendBtn = inputBar.querySelector('.send');
+  sendBtn.addEventListener('click', ()=>{
+    const txt = (input.value || '').trim(); if (!txt) return;
+    sendMessage(current, friend, txt);
+    input.value = '';
+    renderMessages();
+  });
+  input.addEventListener('keydown', (e)=>{
+    if (e.key === 'Enter'){ e.preventDefault(); sendBtn.click(); }
+  });
+
+  // minimize/close handlers
+  header.querySelector('.close')?.addEventListener('click', ()=>{
+    document.body.removeChild(win);
+    delete openChatWindows[friend];
+    rearrangeChatPopups();
+  });
+  header.querySelector('.minimize')?.addEventListener('click', ()=>{
+    if (msgArea.style.display === 'none'){
+      msgArea.style.display = 'flex';
+      inputBar.style.display = 'flex';
+    } else {
+      msgArea.style.display = 'none';
+      inputBar.style.display = 'none';
+    }
+  });
+
+  // when window opens, mark as read
+  markChatReadForUser(friend, current);
+  updateMessengerBadge();
+
+  // expose a simple rerender function for external callers
+  win._renderMessages = renderMessages;
+
+  // when new message arrives (other side), rerender if open
+  rearrangeChatPopups();
+  return win;
+}
+
+function rearrangeChatPopups(){
+  // reposition open popups from right to left
+  const keys = Object.keys(openChatWindows);
+  keys.forEach((friend, idx)=>{
+    const win = openChatWindows[friend];
+    if (!win) return;
+    const offset = (POPUP_WIDTH + POPUP_GAP) * idx;
+    win.style.right = (18 + offset) + 'px';
+  });
+}
+
+function renderOpenChatWindowWithMarkRead(friend){
+  // if popup open for friend, rerender and mark read
+  if (openChatWindows[friend] && openChatWindows[friend]._renderMessages){
+    markChatReadForUser(friend, current);
+    openChatWindows[friend]._renderMessages();
+    updateMessengerBadge();
+  }
+}
+
+/*********************
+ * Utilities
+ *********************/
+function escapeHtml(s){
+  if (s === null || typeof s === 'undefined') return '';
+  return String(s).replace(/[&<>"']/g,(m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+/*********************
+ * Startup
+ *********************/
+const prev = getCurrentUser();
+if (prev){
+  current = prev;
+  const uobj = getUsers();
+  if (!uobj[current]) { uobj[current] = { password:'', displayName: current, bio:'', pic: '' }; saveUsers(uobj); }
+  openApp();
+} else {
+  toggleAuthMode(true);
+}
+
+  </script>
+
+  <script>
+    // typing effect
+    const typed = new Typed('.multiple-text', {
+      strings: [
+        'Welcome to TRIBE Social App',
+        'You are the Real OG',
+        'You are Literally among the very first humans to try the TRIBE Social App',
+        'This is the very first Version of the web app'
+      ],
+      typeSpeed:100,
+      backSpeed:100,
+      backDelay:100,
+      loop:true
+    });
+  </script>
+</body>
+</html>
